@@ -3,10 +3,10 @@
 //
 
 #include "../include/scanning.h"
-#include <string>
 
 using namespace std;
 
+// Scan text for frequency of characters
 int* scan_text(string& text)
 {
     int i;

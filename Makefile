@@ -40,4 +40,7 @@ clean:
 #	$(CC) -std=c++17 -c $< -o test_scan_text.out
 
 scan_text: test/scanning_test.cpp $(OBJ_DIR)/scanning.o | $(BIN_DIR)
-	$(CC) $(CPPFLAGS) -std=c++14 -c $< -o $(BIN_DIR)/test_scan_text.out
+	$(CC) $(CPPFLAGS) -std=c++14 -o $(BIN_DIR)/test_scan_text.out
+
+huffmannode: test/huffmantreenode_test.cpp $(OBJ_DIR)/HuffmanTreeNode.o $(OBJ_DIR)/scanning.o $(OBJ_DIR)/BuildHuffmanTree.o | $(BIN_DIR)
+	$(CC) $(CPPFLAGS) -std=c++14 -o $(BIN_DIR)/test_huffmantreenode.out
