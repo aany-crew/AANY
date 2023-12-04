@@ -4,7 +4,7 @@
 
 // g++ -std=c++17 test/scanning_test.cpp src/scanning.cpp  -o bin/test_scan_text.out
 
-#include "../include/scanning.h"
+#include "../include/Text.h"
 #include <string>
 #include <iostream>
 #include <fstream>

@@ -42,5 +42,5 @@ clean:
 scan_text: test/scanning_test.cpp $(OBJ_DIR)/scanning.o | $(BIN_DIR)
 	$(CC) $(CPPFLAGS) -std=c++14 -o $(BIN_DIR)/test_scan_text.out
 
-huffmannode: test/huffmantreenode_test.cpp $(OBJ_DIR)/HuffmanTreeNode.o $(OBJ_DIR)/scanning.o $(OBJ_DIR)/BuildHuffmanTree.o | $(BIN_DIR)
-	$(CC) $(CPPFLAGS) -std=c++14 -o $(BIN_DIR)/test_huffmantreenode.out
+huffmannode: test/huffmantreenode_test.cpp $(OBJ_DIR)/HuffmanTreeNode.o $(OBJ_DIR)/Text.o $(OBJ_DIR)/BuildHuffmanTree.o | $(BIN_DIR)
+	$(CC) -std=c++14 -o $(BIN_DIR)/test_huffmantreenode.out

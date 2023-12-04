@@ -3,7 +3,7 @@
 //
 
 #include "../include/HuffmanTreeNode.h"
-#include "../include/scanning.h"
+#include "../include/Text.h"
 #include "../include/BuildHuffmanTree.h"
 #include "../include/GenerateHuffmanCodes.h"
 #include <string>
@@ -11,7 +11,7 @@
 #include <fstream>
 #include <vector>
 
-// g++ -std=c++17 test/huffmantreenode_test.cpp src/scanning.cpp src/HuffmanTreeNode.cpp src/BuildHuffmanTree.cpp src/GenerateHuffmanCodes.cpp -o bin/huffmantreenode_test.out
+// g++ -std=c++17 test/huffmantreenode_test.cpp src/Text.cpp src/HuffmanTreeNode.cpp src/BuildHuffmanTree.cpp src/GenerateHuffmanCodes.cpp -o bin/huffmantreenode_test.out
 using namespace std;
 
 
@@ -57,7 +57,7 @@ int main(int argc, char *argv[]){
     cout << example_text << endl;
 
     // Get frequency of each character
-    int* arr = scan_text(example_text);
+    int* arr = GetCharFrequency(example_text);
 
     // Build the tree
     std::shared_ptr<HuffmanTreeNode> root = BuildHuffmanTree(arr);
@@ -65,6 +65,7 @@ int main(int argc, char *argv[]){
     // Generate numeric codes for each character in the tree
     unordered_map<char, string> HuffmanCodes = GenerateHuffmanCodes(root);
 
+#pragma region Make into a function `ConvertToBits()`
     // Create array of booleans and calculate what size it should be
     int total_bit_size = 0;
     unordered_map<char, string>::iterator it;
@@ -92,6 +93,7 @@ int main(int argc, char *argv[]){
         c_code_ptr = 0;
         txt_ptr++;
     }
+#pragma endregion
 
     // Print tree
     printHuffmanTree(root);

@@ -2,12 +2,12 @@
 // Created by Noah Markowitz on 11/27/23.
 //
 
-#include "../include/scanning.h"
+#include "../include/Text.h"
 
 using namespace std;
 
 // Scan text for frequency of characters
-int* scan_text(string& text)
+int* GetCharFrequency(string& text)
 {
     int i;
     int n;

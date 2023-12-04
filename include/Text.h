@@ -9,6 +9,6 @@
 using namespace std;
 
 // Scan text and generate array of number of instances of each ascii character
-int* scan_text(string& text);
+int* GetCharFrequency(string& text);
 
 #endif //AANY_SCANNING_H
