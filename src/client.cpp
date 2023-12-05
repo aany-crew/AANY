@@ -81,6 +81,50 @@ int Client::put(std::string filename)
 	}
 	uint64_t file_size = file_stats.st_size;
 
+	std::unordered_map<uint8_t, uint64_t> freq_map;
+	uint8_t data_block[BLOCK_SIZE] = {0};
+	for (uint64_t bytes_read = 0; bytes_read < file_size; ++bytes_read) {
+		if (read(file_size, data_block, BLOCK_SIZE) != BLOCK_SIZE) {
+			ERROR("read");
+			close(in_file);
+			close(server_soc);
+			return -1;
+		}
+		// scan freq here
+		scan(freq_map, data_block);
+	}
+	if (lseek(in_file, 0, SEEK_SET) != 0) {
+		ERROR("lseek");
+		close(in_file);
+		close(server_soc);
+		return -1;
+	}
+
+/* BEGINNING OF FILE
+uint64_t N
+uint8_t huffman_elements[N]
+huffman_elements[0]
+huffman_elements[1]
+huffman_elements[2]
+.
+.
+.
+huffman_elements[N]
+START OF COMPRESSED DATA
+ */
+
+	std::vector<bool> compressed_data;
+	for (uint64_t bytes_read = 0; bytes_read < file_size; ++bytes_read) {
+		if (read(file_size, data_block, BLOCK_SIZE) != BLOCK_SIZE) {
+			ERROR("read");
+			close(in_file);
+			close(server_soc);
+			return -1;
+		}
+		// compress here
+		compress(freq_map, compressed_data, data_block)
+	}
+
 	// let server know how many bytes the file is
 	if (send(server_soc, &file_size, sizeof(file_size), 0) != sizeof(file_size)) {
 		ERROR("send");
