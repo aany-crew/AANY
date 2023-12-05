@@ -16,6 +16,7 @@ public:
     int freq;
     bool has_value;
     char value;
+    int height;
 
     // Leaf nodes
     std::shared_ptr<HuffmanTreeNode> left;

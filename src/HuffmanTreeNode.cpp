@@ -9,17 +9,20 @@ using namespace std;
 HuffmanTreeNode::HuffmanTreeNode(){
     freq = 0;
     has_value = false;
+    height = 0;
 }
 
 HuffmanTreeNode::HuffmanTreeNode(char c, int f){
     freq = f;
     value = c;
     has_value = true;
+    height = 0;
 }
 
 HuffmanTreeNode::HuffmanTreeNode(int f){
     freq = f;
     has_value = false;
+    height = 0;
 }
 
 HuffmanTreeNode::HuffmanTreeNode(const HuffmanTreeNode& h){
@@ -30,5 +33,6 @@ HuffmanTreeNode::HuffmanTreeNode(const HuffmanTreeNode& h){
     } else {
         has_value = false;
     }
+    height = 0;
 }
 

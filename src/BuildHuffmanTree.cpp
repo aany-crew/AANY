@@ -5,6 +5,7 @@
 #include "../include/BuildHuffmanTree.h"
 #include "../include/HuffmanTreeNode.h"
 #include <queue>
+#include <algorithm>
 
 // Build Huffman Tree accepting input as int array telling frequency of each character
 std::shared_ptr<HuffmanTreeNode> BuildHuffmanTree(int* arr){
@@ -29,6 +30,7 @@ std::shared_ptr<HuffmanTreeNode> BuildHuffmanTree(int* arr){
         PQ.pop();
 
         auto mergedNode = std::make_shared<HuffmanTreeNode>(tmp_node1->freq+tmp_node2->freq);
+        mergedNode->height = max(tmp_node1->height, tmp_node2->height) + 1;
         mergedNode->left = tmp_node1;
         mergedNode->right = tmp_node2;
         PQ.push(mergedNode);

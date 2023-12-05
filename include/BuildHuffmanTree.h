@@ -12,7 +12,11 @@ std::shared_ptr<HuffmanTreeNode> BuildHuffmanTree(int*);
 
 struct CompareNodes {
     bool operator()(const std::shared_ptr<HuffmanTreeNode>& a, const std::shared_ptr<HuffmanTreeNode>& b) const {
-        return a->freq > b->freq;
+        if (a->freq == b->freq){
+            return int(a->value) > int(b->value);
+        } else{
+            return a->freq > b->freq;
+        }
     }
 };
 

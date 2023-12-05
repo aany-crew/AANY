@@ -10,6 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <cmath>
 
 // g++ -std=c++17 test/huffmantreenode_test.cpp src/Text.cpp src/HuffmanTreeNode.cpp src/BuildHuffmanTree.cpp src/GenerateHuffmanCodes.cpp -o bin/huffmantreenode_test.out
 using namespace std;
@@ -98,6 +99,9 @@ int main(int argc, char *argv[]){
     // Print tree
     printHuffmanTree(root);
 
+    cout << "Tree height: " << root->height << endl;
+    cout << "Maximum number of nodes: " << pow(2,root->height+1) -1 << endl;
+
     // Print each character and its numeric code
     cout << "HUFFMAN CODES" << endl;
     //unordered_map<char, string>::iterator it;
@@ -112,6 +116,7 @@ int main(int argc, char *argv[]){
         cout << (*vit ? '1' : '0');
     }
     cout << endl;
+
 
     //<< bitarray << endl;
 
