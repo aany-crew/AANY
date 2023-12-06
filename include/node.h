@@ -25,10 +25,13 @@ class Node {
 public:
 	Node();
 	int initialize(std::string node_ip, uint16_t port);
-	int receive_request_type();
+	void handle_request();
+	
+	DataRequestType receive_request_type();
 	int receive_data();
 	int send_data();
 	int store_data();
+
 
 private:
     int node_soc;
