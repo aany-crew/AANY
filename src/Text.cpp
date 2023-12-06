@@ -7,28 +7,24 @@
 using namespace std;
 
 // Scan text for frequency of characters
-int* GetCharFrequency(string& text)
+void GetCharFrequency(unordered_map<uint8_t, uint64_t> &frequency_map, string& text)
 {
     int i;
-    int n;
-    char c;
     int l = text.length();
-
-    // Generate array
-    //int arr[128] = {0};
-    int* arr = new int[128];
-    for (i=0; i<128; i++){
-        arr[i] = 0;
-    }
+    uint8_t c_num;
 
     // Iterate over each character in the text
     for (i=0; i<l; i++){
-        c = text[i];
-        n = int(c);
-        arr[n] += 1;
+        c_num = (uint8_t)text[i];
+        if (frequency_map.find(c_num) == frequency_map.end()){
+            frequency_map[c_num] = 1;
+        }
+        else{
+            frequency_map[c_num]++;
+        }
     }
 
-    return arr;
+    return;
 }
 
 /*
@@ -40,15 +36,15 @@ HuffmanCodes - Map of char to bit representation
 */
 
 // Each chunk will be a vector<bool>
-void CompressText(unordered_map<char, string> &HuffmanCodes, vector<bool> &Chunk, int ChunkSize, int& TextPtr, string& Text){
+int CompressText(unordered_map<char, string> &HuffmanCodes, vector<bool> &Chunk, int ChunkSize, int& TextPtr, string& Text){
 
     int TotalBits = 0; // Total bits converted thus far
-    int ChhunkArrayPtr = 0; // Pointer to where to store the next bit in the Chunk
+    int ChunkArrayPtr = 0; // Pointer to where to store the next bit in the Chunk
     int char_code_len; // String length of the code for that character
     int char_code_ptr = 0; // Pointer to where in the code for that character you are
     char C; // Single character to scan from text
     string C_code; // The Huffman code corresponding to that char C
-
+    int Text_len = Text.length();
     bool keep_going = true;
 
     while (keep_going){
@@ -62,22 +58,27 @@ void CompressText(unordered_map<char, string> &HuffmanCodes, vector<bool> &Chunk
         vector<bool> tmp_bitarray(char_code_len,false);
 
         // Make sure there's enough storage space left in this chunk
-        if (char_code_len + TotalBits < ChunkSize){
+        if ( (char_code_len+TotalBits) < ChunkSize && TextPtr < Text_len){
 
             // Convert code to bits
             while (char_code_ptr < char_code_len){
-                Chunk[ChhunkArrayPtr] = C_code[char_code_ptr] == '1' ? true : false;
+                Chunk[ChunkArrayPtr] = C_code[char_code_ptr] == '1';
                 char_code_ptr++;
-                ChhunkArrayPtr++;
+                ChunkArrayPtr++;
             }
 
             // Reset char_code_ptr and increment TextPtr
             char_code_ptr = 0;
             TextPtr++;
+            TotalBits += char_code_len;
         } else {
             keep_going = false;
         }
+        //cout << "Just did: " << C << endl;
+        //cout << "Did an iter!" << endl;
     }
+
+    return TotalBits;
 }
 
 string DecompressText(const shared_ptr<HuffmanTreeNode>& root, vector<bool> &Chunk, int NValidBits){

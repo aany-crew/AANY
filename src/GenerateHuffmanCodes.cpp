@@ -22,7 +22,7 @@ void GenerateHuffmanCodesDriver(const shared_ptr<HuffmanTreeNode>& root, string 
     }
 
     if (root->has_value){
-        huffmanCodes[root->value] = code;
+        huffmanCodes[(char)root->value] = code;
     }
 
     // Traverse left (0) and append '0' to the code

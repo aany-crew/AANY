@@ -8,18 +8,23 @@
 #include <algorithm>
 
 // Build Huffman Tree accepting input as int array telling frequency of each character
-std::shared_ptr<HuffmanTreeNode> BuildHuffmanTree(int* arr){
+std::shared_ptr<HuffmanTreeNode> BuildHuffmanTree(unordered_map<uint8_t, uint64_t>& frequency_map){
 
     // Make priority queue PQ
     std::priority_queue<std::shared_ptr<HuffmanTreeNode>, std::vector<std::shared_ptr<HuffmanTreeNode> >, CompareNodes> PQ;
 
-    int i;
+    //int i;
 
-    // For characters with freq greater than 1, make into a node and push into PQ
-    for (i=0; i<128; i++){
-        if (arr[i] > 0){
-            PQ.push(std::make_shared<HuffmanTreeNode>(char(i), arr[i]));
-        }
+//    // For characters with freq greater than 1, make into a node and push into PQ
+//    for (i=0; i<128; i++){
+//        if (arr[i] > 0){
+//            PQ.push(std::make_shared<HuffmanTreeNode>(char(i), arr[i]));
+//        }
+//    }
+
+    unordered_map<uint8_t, uint64_t>::iterator it;
+    for (it=frequency_map.begin(); it != frequency_map.end(); it++){
+        PQ.push(std::make_shared<HuffmanTreeNode>(it->first, it->second));
     }
 
     // Keep popping and combining smallest nodes until only one is left to be the root

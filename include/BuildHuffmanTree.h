@@ -7,8 +7,9 @@
 
 #include "HuffmanTreeNode.h"
 #include <memory>
+#include <unordered_map>
 
-std::shared_ptr<HuffmanTreeNode> BuildHuffmanTree(int*);
+std::shared_ptr<HuffmanTreeNode> BuildHuffmanTree(unordered_map<uint8_t, uint64_t> &frequency_map);
 
 struct CompareNodes {
     bool operator()(const std::shared_ptr<HuffmanTreeNode>& a, const std::shared_ptr<HuffmanTreeNode>& b) const {

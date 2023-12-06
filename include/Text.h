@@ -13,7 +13,7 @@
 using namespace std;
 
 // Scan text and generate array of number of instances of each ascii character
-int* GetCharFrequency(string& text);
+void GetCharFrequency(unordered_map<uint8_t, uint64_t> &frequency_map, string& text);
 
 /*
 HuffmanCodes - Map of char to bit representation
@@ -22,7 +22,7 @@ HuffmanCodes - Map of char to bit representation
  TextPtr - Where in the text to read next
  Text - String of text to read and convert to bits
 */
-void CompressText(unordered_map<char, string> &HuffmanCodes, vector<bool> &Chunk, int ChunkSize, int& TextPtr, string& Text);
+int CompressText(unordered_map<char, string> &HuffmanCodes, vector<bool> &Chunk, int ChunkSize, int& TextPtr, string& Text);
 
 string DecompressText(const shared_ptr<HuffmanTreeNode>& root, vector<bool> &Chunk, int ChunkSize, int& BitArrayPtr);
 
