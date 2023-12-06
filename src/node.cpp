@@ -26,7 +26,7 @@ Node::Node() {
     memset(&node_addr, 0, sizeof(node_addr));
 }
 
-int Node::initialize(std::string node_ip, uint16_t port) {
+int Node::initialize(std::string server_ip, uint16_t port) {
     if ((node_soc = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         perror("node: socket failed");
         return -1;
@@ -35,13 +35,42 @@ int Node::initialize(std::string node_ip, uint16_t port) {
     node_addr.sin_family = AF_INET;
     node_addr.sin_port = htons(port);
 
-    if (inet_pton(AF_INET, node_ip.c_str(), &node_addr.sin_addr) != 1) {
+    if (inet_pton(AF_INET, server_ip.c_str(), &node_addr.sin_addr) != 1) {
         perror("node: inet_pton failed");
         close(node_soc);
         return -1;
     }
 
     return 0;
+}
+
+enum DataRequestType Node::receive_request_type()
+{
+	recv
+}
+
+/* ONLY IF PUT REQUEST */
+int Node::receive_data()
+{
+	recv something that uniquely identifies that block with that file
+
+	uint8_t data_buffer[BLOCK_SIZE] = {0};
+	recv
+	write("filename")
+}
+
+/* ONLY IF GET REQUEST */
+int Node::send_data()
+{
+	read("filename")
+	send()
+}
+
+/* ONLY IF PUT REQUEST */
+int Node::store_data()
+{
+	write("filename")
+	send confirmation
 }
 
 int Node::get() {
