@@ -55,9 +55,14 @@ void print_metadata_map() {
     }
 }
 
-
+// I have used this for testing 
 int main() {
     update_map("test_data.txt"); // Update the file name as needed
     print_metadata_map();
     return 0;
 }
+
+//  Here is the file i Used for testing 
+//192.168.1.1 1 2 3
+//192.168.1.2 2 3 4
+//192.168.1.3 5
