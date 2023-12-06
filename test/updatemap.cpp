@@ -38,26 +38,24 @@ void update_map(const std::string &filename) {
 
     file.close();
 }
-
 void print_metadata_map() {
     for (const auto& pair : metadata_map) {
         std::cout << "IP Address: " << pair.first << "\n";
-        std::cout << "Block IDs: ";
 
         // Iterate over the map inside Metadata
         for (const auto& ip_pair : pair.second.mp) {
             std::cout << "IP: " << ip_pair.first << " -> Blocks: ";
             
-            // Iterate over the set of block IDs
+            // Iterate over the vector of block IDs
             for (const auto& id : ip_pair.second) {
                 std::cout << id << " ";
             }
             std::cout << "\n";
         }
-
-        std::cout << "\n";
     }
 }
+
+
 int main() {
     update_map("test_data.txt"); // Update the file name as needed
     print_metadata_map();
