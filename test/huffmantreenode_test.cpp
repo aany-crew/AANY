@@ -11,6 +11,7 @@
 #include <fstream>
 #include <vector>
 #include <cmath>
+#include <utility>
 
 // g++ -std=c++17 test/huffmantreenode_test.cpp src/Text.cpp src/HuffmanTreeNode.cpp src/BuildHuffmanTree.cpp src/GenerateHuffmanCodes.cpp -o bin/huffmantreenode_test.out
 using namespace std;
@@ -74,42 +75,29 @@ int main(int argc, char *argv[]){
 
     cout << "PASS4" << endl;
 
-    /*
-#pragma region Make into a function `ConvertToBits()`
-    // Create array of booleans and calculate what size it should be
-    int total_bit_size = 0;
-    unordered_map<char, string>::iterator it;
-    for (it=HuffmanCodes.begin(); it != HuffmanCodes.end(); it++){
-        c = it->first;
-        c_code = it->second;
-        //total_bit_size += arr[int(c)]*c_code.length();
-        total_bit_size += frequency_map[c]*c_code.length();
-    }
-    vector<bool> bitarray(total_bit_size, false);
+    // Convert huffman tree to array
+    pair< vector<uint8_t>, vector<uint64_t> > HuffmanArrayRep = HuffmanTreeToArray(root);
 
+    cout << "PASS5" << endl;
 
-    int txt_ptr = 0;
-    int bitarray_ptr=0;
-    int c_code_len;
-    int c_code_ptr=0;
-    while (bitarray_ptr<total_bit_size){
-        c = example_text[txt_ptr];
-        c_code = HuffmanCodes[c];
-        c_code_len = c_code.length();
-        while (c_code_ptr<c_code_len){
-            bitarray[bitarray_ptr] = c_code[c_code_ptr] == '1' ? true : false;
-            c_code_ptr++;
-            bitarray_ptr++;
-        }
-        c_code_ptr = 0;
-        txt_ptr++;
-    }
-#pragma endregion
-    */
+    // Convert array(s) back to unordered map
+    unordered_map<uint8_t, uint64_t> frequency_map2;
+    vector<uint8_t> characters = HuffmanArrayRep.first;
+    vector<uint64_t> frequencies = HuffmanArrayRep.second;
+    GetCharFrequency(frequency_map2,characters,frequencies);
+
+    cout << "PASS6" << endl;
+
+    // Make a second Huffman tree to compare
+    std::shared_ptr<HuffmanTreeNode> root2 = BuildHuffmanTree(frequency_map2);
+
+    cout << "PASS7" << endl;
 
     // Print tree
     printHuffmanTree(root);
+    printHuffmanTree(root2);
 
+    // Tree info print
     cout << "Tree height: " << root->height << endl;
     cout << "Maximum number of nodes: " << pow(2,root->height+1) -1 << endl;
 
@@ -120,24 +108,28 @@ int main(int argc, char *argv[]){
         cout << it->first << ": " << it->second << endl;
     }
 
+    // Check huffman codes of reconstructed huffman tree
+    cout << "HUFFMAN CODES2" << endl;
+    for (it=HuffmanCodes.begin(); it != HuffmanCodes.end(); it++){
+        cout << it->first << ": " << it->second << endl;
+    }
+
+    // Compress text
     vector<bool> chunk(1024,false);
     int textptr = 0;
-    int NValidBits = CompressText(HuffmanCodes, chunk, 1024, textptr, example_text);
+    int NValidBits = CompressText(root, chunk, 1024, textptr, example_text);
     cout << "PASS5" << endl;
 
+    // Print bits
     cout << "Bitarray: ";
-//    vector<bool>::iterator vit;
-//    int bl = chunk.size();
-//    for (vit = chunk.begin(); vit != chunk.end(); vit++){
-//        cout << (*vit ? '1' : '0');
-//    }
     for (i=0; i<NValidBits; i++){
         cout << (chunk[i] ? '1' : '0');
     }
     cout << endl;
 
-
-    //<< bitarray << endl;
+    // Decompress text
+    string decompressed_text = DecompressText(root, chunk, NValidBits);
+    cout << "Decompressed Text: " << decompressed_text << endl;
 
     return 0;
 

@@ -1,4 +1,9 @@
 #include "client.h"
+#include "Text.h"
+#include "GenerateHuffmanCodes.h"
+#include "HuffmanTreeNode.h"
+#include "BuildHuffmanTree.h"
+#include <memory>
 
 #ifdef DEBUG
 	#define ERROR(function) error_at_line(0, errno, __FILE__, __LINE__, "%s: %s failed", __func__, function);
@@ -91,7 +96,8 @@ int Client::put(std::string filename)
 			return -1;
 		}
 		// scan freq here
-		scan(freq_map, data_block);
+		//scan(freq_map, data_block);
+        GetCharFrequency(freq_map, data_block);
 	}
 	if (lseek(in_file, 0, SEEK_SET) != 0) {
 		ERROR("lseek");
@@ -99,6 +105,10 @@ int Client::put(std::string filename)
 		close(server_soc);
 		return -1;
 	}
+
+    // Build tree and generate codes
+    std::shared_ptr<HuffmanTreeNode> root = BuildHuffmanTree(freq_map);
+    std::unordered_map<char, std::string> HuffmanCodes = GenerateHuffmanCodes(root);
 
 /* BEGINNING OF FILE
 uint64_t N
@@ -121,8 +131,10 @@ START OF COMPRESSED DATA
 			close(server_soc);
 			return -1;
 		}
-		// compress here
-		compress(freq_map, compressed_data, data_block)
+
+        // compress here
+		//compress(freq_map, compressed_data, data_block)
+        CompressText(root, compressed_data, data_block);
 	}
 
 	// let server know how many bytes the file is

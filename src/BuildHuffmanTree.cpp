@@ -6,6 +6,9 @@
 #include "../include/HuffmanTreeNode.h"
 #include <queue>
 #include <algorithm>
+#include <stack>
+
+using namespace std;
 
 // Build Huffman Tree accepting input as int array telling frequency of each character
 std::shared_ptr<HuffmanTreeNode> BuildHuffmanTree(unordered_map<uint8_t, uint64_t>& frequency_map){
@@ -44,3 +47,60 @@ std::shared_ptr<HuffmanTreeNode> BuildHuffmanTree(unordered_map<uint8_t, uint64_
     PQ.pop();
     return root;
 }
+
+// Convert Huffman tree to array. Output is std::pair<uint8_t*, uint64_t*> and each represent char (as uint8_t) and frequency (as uint64_t)
+std::pair< vector<uint8_t>, vector<uint64_t> > HuffmanTreeToArray(const std::shared_ptr<HuffmanTreeNode>& root){
+
+    // Get height of tree and calculate array length needed to store data
+    int max_n_nodes = pow(2, root->height+1) -1;
+
+    // Create the arrays that will be needed
+    //uint8_t *characters = new uint8_t[max_n_nodes];
+    //uint64_t *frequencies = new uint64_t[max_n_nodes];
+    vector<uint8_t> characters;
+    vector<uint64_t> frequencies;
+
+    // Perform in-order traversal
+    stack<shared_ptr<HuffmanTreeNode> >s;
+    shared_ptr<HuffmanTreeNode> current_node = root;
+    int array_ptr = 0;
+
+    while (current_node != NULL || !s.empty()){
+
+        // Keep traversing left
+        while (current_node != NULL){
+            s.push(current_node);
+            current_node = current_node->left;
+        }
+
+        if (!s.empty()){
+
+            // Get the node and pop it
+            current_node = s.top();
+            s.pop();
+
+            // Store the data
+            //frequencies[array_ptr] = current_node->freq;
+            //characters[array_ptr] = current_node->has_value ? current_node->value : 0;
+            //array_ptr++;
+            if (current_node->has_value){
+                frequencies.push_back(current_node->freq);
+                //characters.push_back(current_node->has_value ? current_node->value : 0);
+                characters.push_back(current_node->value);
+            }
+
+
+            current_node = current_node->right;
+        }
+    }
+
+    // Create a pair to return the two arrays
+    //pair<uint8_t*,uint64_t*> output (characters, frequencies);
+    pair< vector<uint8_t>, vector<uint64_t> > output(characters, frequencies);
+    return output;
+}
+
+// Convert arrays to Huffman tree
+//std::shared_ptr<HuffmanTreeNode> ArrayToHuffmanTree(uint8_t* characters, uint64_t* frequency){
+//
+//}

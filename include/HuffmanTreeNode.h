@@ -29,6 +29,7 @@ public:
     HuffmanTreeNode(const HuffmanTreeNode&);
     HuffmanTreeNode(uint64_t);
     HuffmanTreeNode(uint8_t ,uint64_t);
+
 };
 
 #endif //AANY_HUFFMANTREENODE_H
