@@ -6,7 +6,13 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-
+#include <cstring>
+#include <stdint.h>
+#include <unistd.h>
+#include <error.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <arpa/inet.h>
 #define BLOCK_SIZE 1024
 
 enum DataRequestType {
