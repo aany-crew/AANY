@@ -1,68 +1,40 @@
-#include <unordered_map>
+#include <fstream>
+#include <sstream>
+#include <cstdint>
 #include <unordered_set>
+#include <unordered_map>
 #include <string>
-#include <iostream>
-#include <vector>
-#include <cstdint> // For uint64_t
 
-struct Metadata {
-    uint64_t numBlocks; // Number of blocks in the compressed file
-    std::string storageLocation; // IP address
-    std::unordered_map<std::string, std::unordered_set<uint64_t>> blockMap; // Map IP address to each block ID it holds
-
-    // Constructor to initialize Metadata objects
-    Metadata(uint64_t numBlocks, std::string storageLocation, 
-             const std::unordered_map<std::string, std::unordered_set<uint64_t>>& blockMap)
-        : numBlocks(numBlocks), storageLocation(storageLocation), blockMap(blockMap) {}
+class Metadata {
+public:
+    uint64_t num_encodings;
+    uint64_t num_blocks;
+    std::unordered_map<std::string, std::unordered_set<uint64_t>> mp;
 };
 
-std::unordered_map<std::string, std::vector<Metadata>> metadata_map;
+std::unordered_map<std::string, Metadata> metadata_map;
 
-void update_map(const std::string& filename, const Metadata& metadata) {
-    metadata_map[filename].push_back(metadata);
-}
+void update_map(const std::string &filename) {
+    std::ifstream file(filename);
+    std::string line;
 
-void get_metadata_for_all_files() {
-    for (const auto& pair : metadata_map) {
-        std::cout << "File: " << pair.first << std::endl;
-        for (const auto& metadata : pair.second) {
-            std::cout << "  Number of Blocks: " << metadata.numBlocks
-                      << ", Storage Location: " << metadata.storageLocation << std::endl;
-            for (const auto& ip_block_pair : metadata.blockMap) {
-                std::cout << "  IP Address: " << ip_block_pair.first << " holds blocks: ";
-                for (const auto& blockID : ip_block_pair.second) {
-                    std::cout << blockID << " ";
-                }
-                std::cout << std::endl;
-            }
+    while (getline(file, line)) {
+        std::istringstream iss(line);
+        std::string ip;
+        uint64_t block_id;
+        iss >> ip;
+
+        // Create Metadata object if it doesn't exist
+        if (metadata_map.find(ip) == metadata_map.end()) {
+            metadata_map[ip] = Metadata();
+        }
+
+        // Add block IDs to the set for this IP
+        while (iss >> block_id) {
+            metadata_map[ip].mp[ip].insert(block_id);
+            metadata_map[ip].num_blocks = metadata_map[ip].mp[ip].size();
         }
     }
-}
 
-int main() {
-    // Get filename from user
-    std::string filename;
-    std::cout << "Enter filename: ";
-    std::cin >> filename;
-
-    // Check if the filename exists in the metadata_map
-    if (metadata_map.find(filename) != metadata_map.end()) {
-        // Display metadata for the specified file
-        std::cout << "Metadata for " << filename << ":\n";
-        for (const auto& metadata : metadata_map[filename]) {
-            std::cout << "  Number of Blocks: " << metadata.numBlocks
-                      << ", Storage Location: " << metadata.storageLocation << std::endl;
-            for (const auto& ip_block_pair : metadata.blockMap) {
-                std::cout << "  IP Address: " << ip_block_pair.first << " holds blocks: ";
-                for (const auto& blockID : ip_block_pair.second) {
-                    std::cout << blockID << " ";
-                }
-                std::cout << std::endl;
-            }
-        }
-    } else {
-        std::cout << "No metadata found for " << filename << std::endl;
-    }
-
-    return 0;
+    file.close();
 }
