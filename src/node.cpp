@@ -1,14 +1,11 @@
-// created by Yuqi Jin Dec.2 2023
-// the functionality of node class is to receive the request_type ---> get(), put(), clear()
+// updated by Yuqi Jin Dec.5 2023
 
 /* the class has three functions: receive_data(), send_data(), store_data()
 the function receive_request type() is to decide which functionality will be used
 
-Dec 4th 2023
-Node: by Yuqi 
-	the client.cpp as reference
+
 	recv data_request_type (put, get, clear)
-	get:
+get:
 	get data from disk (read() syscall, or <fstream>)
 	send data to server
 put:
@@ -44,179 +41,151 @@ int Node::initialize(std::string server_ip, uint16_t port) {
     return 0;
 }
 
-enum DataRequestType Node::receive_request_type()
-{
-	recv
+
+enum DataRequestType Node::receive_request_type() {
+    int request_type;
+    recv(node_soc, &request_type, sizeof(request_type), 0);
+    return static_cast<DataRequestType>(request_type);
 }
 
-/* ONLY IF PUT REQUEST */
-int Node::receive_data()
-{
-	recv something that uniquely identifies that block with that file
 
-	uint8_t data_buffer[BLOCK_SIZE] = {0};
-	recv
-	write("filename")
+// add the switch function, so can handle different request type put / get 
+void Node::handle_request() {
+    DataRequestType request_type = receive_request_type();
+
+    switch (request_type) {
+        case GET:
+            // get the data from the disk
+            receive_data();
+            // send data to server
+            send_data();
+            break;
+
+        case PUT:
+            receive_data();
+            store_data();
+            break;
+
+        case CLEAR:
+            // Handle CLEAR request if needed
+            break;
+
+        default:
+            // Handle unsupported request type or error
+            break;
+    }
 }
 
-/* ONLY IF GET REQUEST */
-int Node::send_data()
-{
-	read("filename")
-	send()
-}
 
-/* ONLY IF PUT REQUEST */
-int Node::store_data()
-{
-	write("filename")
-	send confirmation
-}
 
-int Node::get() {
-    if (connect(node_soc, (struct sockaddr *)&node_addr, sizeof(node_addr)) == -1) {
-        perror("node: connect");
+
+/* IF GET REQUEST */
+int Node::send_data() {
+    std::ifstream infile("filename", std::ios::binary);
+    if (!infile.is_open()) {
+        // Handle error: File not found or unable to open
         return -1;
     }
 
-    // Receive data request type from server
-    DataRequestType request_type;
-    if (recv(node_soc, &request_type, sizeof(request_type), 0) != sizeof(request_type)) {
-        perror("node: recv data request type");
-        close(node_soc);
-        return -1;
-    }
+    // Determine the size of the file
+    infile.seekg(0, std::ios::end);
+    size_t file_size = infile.tellg();
+    infile.seekg(0, std::ios::beg);
 
-    if (request_type == GET) {
-        // Receive data from server
-        // (Assuming file_size is received from the server)
-        uint64_t file_size;
-        if (recv(node_soc, &file_size, sizeof(file_size), 0) != sizeof(file_size)) {
-            perror("node: recv file size");
-            close(node_soc);
-            return -1;
-        }
+    // Allocate buffer to read the file content
+    char* buffer = new char[file_size];
+    infile.read(buffer, file_size);
+    infile.close();
 
-        // Get data from disk (read from file)
-        std::ifstream infile("file_to_get.txt", std::ios::binary | std::ios::ate);
-        std::streamsize fileSize = infile.tellg();
-        infile.seekg(0);
+    // Send file content over the socket
+    send(node_soc, buffer, file_size, 0);
 
-        if (fileSize < 0) {
-            perror("node: file not found or empty");
-            infile.close();
-            close(node_soc);
-            return -1;
-        }
+    delete[] buffer;
 
-        // Send data to server
-        uint8_t data_block[BLOCK_SIZE];
-        while (!infile.eof() && fileSize > 0) {
-            infile.read(reinterpret_cast<char *>(data_block), std::min(BLOCK_SIZE, static_cast<int64_t>(fileSize)));
-            int bytes_sent = send(node_soc, data_block, infile.gcount(), 0);
-            if (bytes_sent <= 0) {
-                perror("node: send data");
-                infile.close();
-                close(node_soc);
-                return -1;
-            }
-            fileSize -= bytes_sent;
-        }
-        infile.close();
-    }
-
-    close(node_soc);
     return 0;
 }
 
-int Node::put() {
-    if (connect(node_soc, (struct sockaddr *)&node_addr, sizeof(node_addr)) == -1) {
-        perror("node: connect");
+/* IF PUT REQUEST */
+int Node::receive_data() {
+    uint8_t data_buffer[BLOCK_SIZE] = {0};
+
+    // Receive data from the server
+    recv(node_soc, data_buffer, BLOCK_SIZE, 0);
+
+    // Write received data to disk
+    std::ofstream outfile("filename", std::ios::binary);
+    if (!outfile.is_open()) {
+        // Handle error: Unable to create/open file for writing
         return -1;
     }
 
-    // Receive data request type from server
-    DataRequestType request_type;
-    if (recv(node_soc, &request_type, sizeof(request_type), 0) != sizeof(request_type)) {
-        perror("node: recv data request type");
-        close(node_soc);
-        return -1;
-    }
+    outfile.write(reinterpret_cast<char*>(data_buffer), BLOCK_SIZE);
+    outfile.close();
 
-    if (request_type == PUT) {
-        // Receive data from server
-        // Assuming file_size is received from the server
-        uint64_t file_size;
-        if (recv(node_soc, &file_size, sizeof(file_size), 0) != sizeof(file_size)) {
-            perror("node: recv file size");
-            close(node_soc);
-            return -1;
-        }
+    // Send confirmation to the server
+    int confirmation = 1;
+    send(node_soc, &confirmation, sizeof(confirmation), 0);
 
-        // Put data in disk (write to file)
-        std::ofstream outfile("file_to_put.txt", std::ios::binary | std::ios::trunc);
-        uint8_t data_block[BLOCK_SIZE];
-        while (file_size > 0) {
-            int bytes_received = recv(node_soc, data_block, std::min(BLOCK_SIZE, static_cast<int64_t>(file_size)), 0);
-            if (bytes_received <= 0) {
-                perror("node: recv data");
-                outfile.close();
-                close(node_soc);
-                return -1;
-            }
-            outfile.write(reinterpret_cast<char *>(data_block), bytes_received);
-            file_size -= bytes_received;
-        }
-        outfile.close();
-
-        // Confirm with server
-        uint8_t confirmation = 1;
-        if (send(node_soc, &confirmation, sizeof(confirmation), 0) != sizeof(confirmation)) {
-            perror("node: send confirmation");
-            close(node_soc);
-            return -1;
-        }
-    }
-
-    close(node_soc);
     return 0;
 }
 
-int Node::clear() {
-    if (connect(node_soc, (struct sockaddr *)&node_addr, sizeof(node_addr)) == -1) {
-        perror("node: connect");
+/* IF PUT REQUEST */
+int Node::store_data() {
+    std::ifstream infile("filename", std::ios::binary);
+    if (!infile.is_open()) {
+        // Handle error: File not found or unable to open
         return -1;
     }
 
-    // Receive data request type from server
-    DataRequestType request_type;
-    if (recv(node_soc, &request_type, sizeof(request_type), 0) != sizeof(request_type)) {
-        perror("node: recv data request type");
-        close(node_soc);
-        return -1;
-    }
+    // Determine the size of the file
+    infile.seekg(0, std::ios::end);
+    size_t file_size = infile.tellg();
+    infile.seekg(0, std::ios::beg);
 
-    if (request_type == CLEAR) {
-        // Perform necessary operations to clear data on disk
-        // For example: Remove or truncate the file
-        // Note: Implementation of clearing data depends on specific requirements
-        // In this example, let's assume clearing the file means removing it
-        std::string file_to_clear = "file_to_clear.txt";
-        if (remove(file_to_clear.c_str()) != 0) {
-            perror("node: remove file");
-            close(node_soc);
-            return -1;
-        }
+    // Allocate buffer to read the file content
+    char* buffer = new char[file_size];
+    infile.read(buffer, file_size);
+    infile.close();
 
-        // Confirm with server
-        uint8_t confirmation = 1;
-        if (send(node_soc, &confirmation, sizeof(confirmation), 0) != sizeof(confirmation)) {
-            perror("node: send confirmation");
-            close(node_soc);
-            return -1;
-        }
-    }
+    // Send file content to the server
+    send(node_soc, buffer, file_size, 0);
 
-    close(node_soc);
-    return 0;
+    delete[] buffer;
+
+    // Wait for confirmation from the server
+    int confirmation;
+    recv(node_soc, &confirmation, sizeof(confirmation), 0);
+
+    return confirmation; // Return confirmation status to the caller
 }
+
+
+// The following Note from Austin
+// enum DataRequestType Node::receive_request_type()
+// {
+// 	recv
+// }
+
+// /* ONLY IF PUT REQUEST */
+// int Node::receive_data()
+// {
+// 	recv something that uniquely identifies that block with that file
+
+// 	uint8_t data_buffer[BLOCK_SIZE] = {0};
+// 	recv
+// 	write("filename")
+// }
+
+// /* ONLY IF GET REQUEST */
+// int Node::send_data()
+// {
+// 	read("filename")
+// 	send()
+// }
+
+// /* ONLY IF PUT REQUEST */
+// int Node::store_data()
+// {
+// 	write("filename")
+// 	send confirmation
+// }
