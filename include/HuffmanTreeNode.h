@@ -13,9 +13,11 @@ using namespace std;
 class HuffmanTreeNode{
 public:
     // Values
-    int freq;
+    //int freq;
+    uint64_t freq;
     bool has_value;
-    char value;
+    //char value;
+    uint8_t value;
     int height;
 
     // Leaf nodes
@@ -25,8 +27,8 @@ public:
     // Constructors
     HuffmanTreeNode();
     HuffmanTreeNode(const HuffmanTreeNode&);
-    HuffmanTreeNode(int);
-    HuffmanTreeNode(char,int);
+    HuffmanTreeNode(uint64_t);
+    HuffmanTreeNode(uint8_t ,uint64_t);
 };
 
 #endif //AANY_HUFFMANTREENODE_H

@@ -12,14 +12,14 @@ HuffmanTreeNode::HuffmanTreeNode(){
     height = 0;
 }
 
-HuffmanTreeNode::HuffmanTreeNode(char c, int f){
+HuffmanTreeNode::HuffmanTreeNode(uint8_t c, uint64_t f){
     freq = f;
     value = c;
     has_value = true;
     height = 0;
 }
 
-HuffmanTreeNode::HuffmanTreeNode(int f){
+HuffmanTreeNode::HuffmanTreeNode(uint64_t f){
     freq = f;
     has_value = false;
     height = 0;

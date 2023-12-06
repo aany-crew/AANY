@@ -57,15 +57,24 @@ int main(int argc, char *argv[]){
     testfile.close();
     cout << example_text << endl;
 
+    // Map for character frequency
+    unordered_map<uint8_t, uint64_t> frequency_map;
+
+    cout << "PASS1" << endl;
     // Get frequency of each character
-    int* arr = GetCharFrequency(example_text);
+    GetCharFrequency(frequency_map, example_text);
 
+    cout << "PASS2" << endl;
     // Build the tree
-    std::shared_ptr<HuffmanTreeNode> root = BuildHuffmanTree(arr);
+    std::shared_ptr<HuffmanTreeNode> root = BuildHuffmanTree(frequency_map);
 
+    cout << "PASS3" << endl;
     // Generate numeric codes for each character in the tree
     unordered_map<char, string> HuffmanCodes = GenerateHuffmanCodes(root);
 
+    cout << "PASS4" << endl;
+
+    /*
 #pragma region Make into a function `ConvertToBits()`
     // Create array of booleans and calculate what size it should be
     int total_bit_size = 0;
@@ -73,7 +82,8 @@ int main(int argc, char *argv[]){
     for (it=HuffmanCodes.begin(); it != HuffmanCodes.end(); it++){
         c = it->first;
         c_code = it->second;
-        total_bit_size += arr[int(c)]*c_code.length();
+        //total_bit_size += arr[int(c)]*c_code.length();
+        total_bit_size += frequency_map[c]*c_code.length();
     }
     vector<bool> bitarray(total_bit_size, false);
 
@@ -95,6 +105,7 @@ int main(int argc, char *argv[]){
         txt_ptr++;
     }
 #pragma endregion
+    */
 
     // Print tree
     printHuffmanTree(root);
@@ -104,16 +115,24 @@ int main(int argc, char *argv[]){
 
     // Print each character and its numeric code
     cout << "HUFFMAN CODES" << endl;
-    //unordered_map<char, string>::iterator it;
+    unordered_map<char, string>::iterator it;
     for (it=HuffmanCodes.begin(); it != HuffmanCodes.end(); it++){
         cout << it->first << ": " << it->second << endl;
     }
 
+    vector<bool> chunk(1024,false);
+    int textptr = 0;
+    int NValidBits = CompressText(HuffmanCodes, chunk, 1024, textptr, example_text);
+    cout << "PASS5" << endl;
+
     cout << "Bitarray: ";
-    vector<bool>::iterator vit;
-    int bl = bitarray.size();
-    for (vit = bitarray.begin(); vit != bitarray.end(); vit++){
-        cout << (*vit ? '1' : '0');
+//    vector<bool>::iterator vit;
+//    int bl = chunk.size();
+//    for (vit = chunk.begin(); vit != chunk.end(); vit++){
+//        cout << (*vit ? '1' : '0');
+//    }
+    for (i=0; i<NValidBits; i++){
+        cout << (chunk[i] ? '1' : '0');
     }
     cout << endl;
 
