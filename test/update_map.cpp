@@ -40,8 +40,29 @@ void get_metadata_for_all_files() {
 }
 
 int main() {
-    // Example usage (Add your implementation here)
-    // get_metadata_for_all_files();
+    // Get filename from user
+    std::string filename;
+    std::cout << "Enter filename: ";
+    std::cin >> filename;
+
+    // Check if the filename exists in the metadata_map
+    if (metadata_map.find(filename) != metadata_map.end()) {
+        // Display metadata for the specified file
+        std::cout << "Metadata for " << filename << ":\n";
+        for (const auto& metadata : metadata_map[filename]) {
+            std::cout << "  Number of Blocks: " << metadata.numBlocks
+                      << ", Storage Location: " << metadata.storageLocation << std::endl;
+            for (const auto& ip_block_pair : metadata.blockMap) {
+                std::cout << "  IP Address: " << ip_block_pair.first << " holds blocks: ";
+                for (const auto& blockID : ip_block_pair.second) {
+                    std::cout << blockID << " ";
+                }
+                std::cout << std::endl;
+            }
+        }
+    } else {
+        std::cout << "No metadata found for " << filename << std::endl;
+    }
 
     return 0;
 }
