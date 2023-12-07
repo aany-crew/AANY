@@ -95,9 +95,7 @@ int Client::put(std::string filename)
 			close(server_soc);
 			return -1;
 		}
-		// scan freq here
-		//scan(freq_map, data_block);
-        GetCharFrequency(freq_map, data_block);
+		GetCharFrequency(freq_map, data_block);
 	}
 	if (lseek(in_file, 0, SEEK_SET) != 0) {
 		ERROR("lseek");
@@ -106,9 +104,9 @@ int Client::put(std::string filename)
 		return -1;
 	}
 
-    // Build tree and generate codes
-    std::shared_ptr<HuffmanTreeNode> root = BuildHuffmanTree(freq_map);
-    std::unordered_map<char, std::string> HuffmanCodes = GenerateHuffmanCodes(root);
+	// Build tree and generate codes
+	std::shared_ptr<HuffmanTreeNode> root = BuildHuffmanTree(freq_map);
+	std::unordered_map<char, std::string> HuffmanCodes = GenerateHuffmanCodes(root);
 
 /* BEGINNING OF FILE
 uint64_t N
@@ -131,13 +129,12 @@ START OF COMPRESSED DATA
 			close(server_soc);
 			return -1;
 		}
-
-        // compress here
-		//compress(freq_map, compressed_data, data_block)
-        CompressText(root, compressed_data, data_block);
+		CompressText(root, compressed_data, data_block);
 	}
 
-	// let server know how many bytes the file is
+	file_size = compressed_data.size();
+
+	// let server know how many bits the file is
 	if (send(server_soc, &file_size, sizeof(file_size), 0) != sizeof(file_size)) {
 		ERROR("send");
 		close(in_file);
@@ -146,28 +143,23 @@ START OF COMPRESSED DATA
 	}
 
 	// send blocks of data to server
-	uint8_t data_block[BLOCK_SIZE];
-	for (; file_size > BLOCK_SIZE; file_size -= BLOCK_SIZE) {
-		if (read(in_file, data_block, BLOCK_SIZE) != BLOCK_SIZE) {
-			ERROR("read");
-			close(in_file);
-			close(server_soc);
-			return -1;
-		}
-		if (send(server_soc, data_block, BLOCK_SIZE, MSG_MORE) != BLOCK_SIZE) {
-			ERROR("send");
-			close(in_file);
-			close(server_soc);
-			return -1;
+	uint8_t byte = 0;
+	uint32_t count;
+	for (count = 0; count < file_size; ++count) {
+		if (count % 8 == 0) {
+			byte <<= 1;
+			byte |= compressed_data[count];
+		} else {
+			if (send(server_soc, &byte, sizeof(byte), MSG_MORE) != sizeof(byte)) {
+				ERROR("send");
+				close(in_file);
+				close(server_soc);
+				return -1;
+			}
+			byte = 0;
 		}
 	}
-	if (read(in_file, data_block, file_size) != (int64_t) file_size) {
-		ERROR("read");
-		close(in_file);
-		close(server_soc);
-		return -1;
-	}
-	if (send(server_soc, data_block, file_size, 0) != (int64_t) file_size) {
+	if (send(server_soc, &byte, sizeof(byte), 0) != sizeof(byte)) {
 		ERROR("send");
 		close(in_file);
 		close(server_soc);

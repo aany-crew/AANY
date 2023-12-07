@@ -6,6 +6,7 @@
 #define AANY_BUILDHUFFMANTREE_H
 
 #include "HuffmanTreeNode.h"
+#include <vector>
 #include <memory>
 #include <unordered_map>
 #include <utility>

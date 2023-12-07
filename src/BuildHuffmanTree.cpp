@@ -4,6 +4,7 @@
 
 #include "../include/BuildHuffmanTree.h"
 #include "../include/HuffmanTreeNode.h"
+#include <cmath>
 #include <queue>
 #include <algorithm>
 #include <stack>
@@ -51,9 +52,6 @@ std::shared_ptr<HuffmanTreeNode> BuildHuffmanTree(unordered_map<uint8_t, uint64_
 // Convert Huffman tree to array. Output is std::pair<uint8_t*, uint64_t*> and each represent char (as uint8_t) and frequency (as uint64_t)
 std::pair< vector<uint8_t>, vector<uint64_t> > HuffmanTreeToArray(const std::shared_ptr<HuffmanTreeNode>& root){
 
-    // Get height of tree and calculate array length needed to store data
-    int max_n_nodes = pow(2, root->height+1) -1;
-
     // Create the arrays that will be needed
     //uint8_t *characters = new uint8_t[max_n_nodes];
     //uint64_t *frequencies = new uint64_t[max_n_nodes];
@@ -63,7 +61,6 @@ std::pair< vector<uint8_t>, vector<uint64_t> > HuffmanTreeToArray(const std::sha
     // Perform in-order traversal
     stack<shared_ptr<HuffmanTreeNode> >s;
     shared_ptr<HuffmanTreeNode> current_node = root;
-    int array_ptr = 0;
 
     while (current_node != NULL || !s.empty()){
 

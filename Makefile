@@ -20,7 +20,7 @@ INC := $(wildcard $(INC_DIR)/*.h)
 
 all: app_client
 
-app_client: $(OBJ_DIR)/app_client.o $(OBJ_DIR)/client.o | $(BIN_DIR)
+app_client: $(OBJ_DIR)/app_client.o $(OBJ_DIR)/client.o $(OBJ_DIR)/Text.o $(OBJ_DIR)/BuildHuffmanTree.o $(OBJ_DIR)/GenerateHuffmanCodes.o $(OBJ_DIR)/HuffmanTreeNode.o | $(OBJ_DIR)
 	$(CC) $^ -o $(BIN_DIR)/$@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC_DIR)/%.h | $(OBJ_DIR)
