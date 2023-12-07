@@ -5,10 +5,11 @@
 #include <string>
 #include <iostream>
 #include <cstdint>
+
 class Metadata {
 public:
-    uint64_t num_encodings;
-    uint64_t num_blocks;
+    // Removed num_encodings.
+    //Num_blocks also removed it was actually redundant
     std::unordered_map<std::string, std::vector<uint64_t>> mp;
 };
 
@@ -32,12 +33,12 @@ void update_map(const std::string &filename) {
         // Add block IDs to the vector for this IP
         while (iss >> block_id) {
             metadata_map[ip].mp[ip].push_back(block_id);
-            metadata_map[ip].num_blocks = metadata_map[ip].mp[ip].size();
         }
     }
 
     file.close();
 }
+
 void print_metadata_map() {
     for (const auto& pair : metadata_map) {
         std::cout << "IP Address: " << pair.first << "\n";
@@ -55,14 +56,8 @@ void print_metadata_map() {
     }
 }
 
-// I have used this for testing 
 int main() {
-    update_map("test_data.txt"); // Update the file name as needed
+    update_map("test_data.txt"); // Update the file name as needed Austin
     print_metadata_map();
     return 0;
 }
-
-//  Here is the file i Used for testing 
-//192.168.1.1 1 2 3
-//192.168.1.2 2 3 4
-//192.168.1.3 5
