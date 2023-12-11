@@ -19,21 +19,28 @@ put:
 #include <fstream>
 
 Node::Node() {
-    node_soc = 0;
+    node_soc = -1;
     memset(&node_addr, 0, sizeof(node_addr));
 }
 
-int Node::initialize(std::string server_ip, uint16_t port) {
+int Node::initialize()
     if ((node_soc = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
         perror("node: socket failed");
         return -1;
     }
 
     node_addr.sin_family = AF_INET;
-    node_addr.sin_port = htons(port);
+    node_addr.sin_addr.s_addr = INADDR_ANY;
+    node_addr.sin_port = htons(PORT);
 
-    if (inet_pton(AF_INET, server_ip.c_str(), &node_addr.sin_addr) != 1) {
-        perror("node: inet_pton failed");
+    if (bind(node_soc, (struct sockaddr *) &node_soc, sizeof(node_soc)) == -1) {
+        ERROR("bind");
+        close(node_soc);
+        return -1;
+    }
+
+    if (listen(server_soc, 3) < 0) {
+        ERROR("listen");
         close(node_soc);
         return -1;
     }

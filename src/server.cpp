@@ -1,116 +1,73 @@
+#include "server.h"
 
+#ifdef DEBUG
+	#define ERROR(function) error_at_line(0, errno, __FILE__, __LINE__, "%s: %s failed", __func__, function)
+#else
+	#define ERROR(function)
+#endif
 
-/*
-int Client::initialize(std::string server_ip, uint16_t port)
+Server::Server(std::unordered_set<std::string> &ips)
 {
-	if ( (server_soc = socket(AF_INET, SOCK_STREAM, 0)) == -1 ) {
-		perror("client: socket failed");
-		return -1;
+	client_soc = -1;
+	server_soc = -1;
+	node_soc = -1;
+	memset(&server_addr, 0, sizeof(struct sockaddr_in));
+	memset(&client_addr, 0, sizeof(struct sockaddr_in));
+	memset(&node_addr, 0, sizeof(struct sockaddr_in));
+	client_addr_len = sizeof(client_addr);
+	for (const std::string &ip : ips) {
+		node_ips.insert(ip);
 	}
-
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(port);
-
-	if (inet_pton(AF_INET, server_ip.c_str(), &server_addr.sin_addr) != 1) {
-		perror("client: inet_pton failed");
-		close(server_soc);
-		return -1;
-	}
-
-	return 0;
 }
- */
 
-#define PORT 8080
-
-int client_soc, server_soc, node_soc;
-struct sockaddr_in server_addr, client_addr, node_addr;
-socklen_t client_addr_len = sizeof(client_addr);
-
-int main()
+void Server::run()
 {
 	if (setup_socket() != 0) {
 		ERROR("setup_socket");
-		exit(EXIT_FAILURE);
+		return;
 	}
 
 	while (1) {
-		LISTEN:
 		if ( (client_soc = accept(server_soc, (struct sockaddr *) &client_addr, &client_addr_len)) < 0 ) {
 			ERROR("accept");
 			continue;
 		}
 
-		uint16_t filename_length;
-		if (recv(server_soc, &filename_length, sizeof(filename_length), 0) != sizeof(filename_length)) {
-			ERROR("recv");
-			close(server_soc);
-			goto LISTEN;
-		}
 		std::string filename;
-		filename.resize(filename_length);
-		if (recv(server_soc, filename.c_str(), filename_length, MSG_WAITALL) != filename_length) {
-			ERROR("recv");
-			close(server_soc);
-			goto LISTEN;
+		if (get_filename(filename) != 0) {
+			ERROR("get_filename");
+			close(client_soc);
+			continue;
 		}
 		
-		uint8_t operation;
-		if (recv(server_soc, &operation, sizeof(operation), 0) != sizeof(operation)) {
+		uint8_t op;
+		if (recv(server_soc, &op, sizeof(op), 0) != sizeof(op)) {
 			ERROR("recv");
-			close(server_soc);
-			goto LISTEN;
+			close(client_soc);
+			continue;
 		}
 
-/*
-	This is where the update_map function should go.
-	It should take a filename as an input, and output 
-	the updated map between IP address and which blocks 
-	that IP address stores.
- */
-
-// IP address -> set of block ids		std::string -> std::unordered_set<uint64_t>
-// multiple IP addressses
-
-		class Metadata {
-			uint64_t num_encodings;
-			uint64_t num_blocks;
-			std::unordered_map<std::string, std::unordered_set<uint64_t>> mp;
-		};
-
-		std::unordered_map<std::string, Metadata> metadata_map;
-
-		update_map(std::string &filename);
-
-		if (inet_pton(AF_INET, node_ip.c_str(), &server_addr.sin_addr) <= 0) {
-			ERROR("inet_pton");
-			close(socket_fd);
-			return -1;
-		}
-
-		if (connect(socket_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0 ) {
-			ERROR("connect");
-			return -1;
-		}
-
-		switch (operation) {
+		switch (op) {
 		case PUT:
+			put(filename);
 			break;
 		case GET:
+			get(filename);
 			break;
 		case CLEAR:
+			clear(filename);
 			break;
 		default:
-			ERROR("operation");
-			close(server_soc);
-			goto LISTEN;
+			ERROR("switch");
+			close(client_soc);
+			continue;
 		}
 	}
 
-	return 0;
+	return;
 }
 
-inline int setup_socket()
+inline int Server::setup_socket()
 {
 	if ( (server_soc = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
 		ERROR("socket");
@@ -140,7 +97,7 @@ inline int setup_socket()
 		close(server_soc);
 		return -1;
 	}
-
+/*
 	if ( (node_soc = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
 		ERROR("socket");
 		return -1;
@@ -148,6 +105,59 @@ inline int setup_socket()
 
 	node_addr.sin_family = AF_INET;
 	node_addr.sin_port = htons(PORT+1);
+*/
+	return 0;
+}
+
+inline int Server::get_filename(std::string &filename)
+{
+	uint16_t filename_length;
+	if (recv(server_soc, &filename_length, sizeof(filename_length), 0) != sizeof(filename_length)) {
+		ERROR("recv");
+		return -1;
+	}
+	filename.resize(filename_length);
+	if (recv(server_soc, filename.data(), filename_length, MSG_WAITALL) != filename_length) {
+		ERROR("recv");
+		return -1;
+	}
 
 	return 0;
 }
+
+inline int Server::put(std::string &filename)
+{
+	int64_t file_size;	/* in bits */
+	if (recv(client_soc, &file_size, sizeof(file_size), 0) != sizeof(file_size)) {
+		ERROR("recv");
+		return -1;
+	}
+
+	// recv blocks of data from client
+	uint8_t *compressed_data = (uint8_t *) malloc((file_size >> 3) + ((file_size & 7) != 0));
+	if (recv(client_soc, compressed_data, (file_size >> 3) + ((file_size & 7) != 0), MSG_WAITALL) != (file_size >> 3) + ((file_size & 7) != 0)) {
+		ERROR("send");
+		return -1;
+	}
+
+	if (metadata_map.find(filename) != metadata_map.end()) {
+		metadata_map.erase(filename);
+	}
+	metadata_map[filename].num_bits = file_size;
+	metadata_map[filename].mp
+
+	return 0;
+}
+
+inline int Server::get(std::string &filename)
+{
+	filename = filename;
+	return 0;
+}
+
+inline int Server::clear(std::string &filename)
+{
+	filename = filename;
+	return 0;
+}
+

@@ -6,13 +6,13 @@
 #include <memory>
 
 #ifdef DEBUG
-	#define ERROR(function) error_at_line(0, errno, __FILE__, __LINE__, "%s: %s failed", __func__, function);
+	#define ERROR(function) error_at_line(0, errno, __FILE__, __LINE__, "%s: %s failed", __func__, function)
 #else
 	#define ERROR(function)
 #endif
 
 Client::Client() {
-        server_soc = 0;
+        server_soc = -1;
 	memset(&server_addr, 0, sizeof(server_addr));
 }
 
@@ -84,11 +84,11 @@ int Client::put(std::string filename)
 		close(server_soc);
 		return -1;
 	}
-	uint64_t file_size = file_stats.st_size;
+	int64_t file_size = file_stats.st_size;
 
 	std::unordered_map<uint8_t, uint64_t> freq_map;
 	uint8_t data_block[BLOCK_SIZE] = {0};
-	for (uint64_t bytes_read = 0; bytes_read < file_size; ++bytes_read) {
+	for (int64_t bytes_read = 0; bytes_read < file_size; ++bytes_read) {
 		if (read(file_size, data_block, BLOCK_SIZE) != BLOCK_SIZE) {
 			ERROR("read");
 			close(in_file);
@@ -108,21 +108,8 @@ int Client::put(std::string filename)
 	std::shared_ptr<HuffmanTreeNode> root = BuildHuffmanTree(freq_map);
 	std::unordered_map<char, std::string> HuffmanCodes = GenerateHuffmanCodes(root);
 
-/* BEGINNING OF FILE
-uint64_t N
-uint8_t huffman_elements[N]
-huffman_elements[0]
-huffman_elements[1]
-huffman_elements[2]
-.
-.
-.
-huffman_elements[N]
-START OF COMPRESSED DATA
- */
-
 	std::vector<bool> compressed_data;
-	for (uint64_t bytes_read = 0; bytes_read < file_size; ++bytes_read) {
+	for (int64_t bytes_read = 0; bytes_read < file_size; ++bytes_read) {
 		if (read(file_size, data_block, BLOCK_SIZE) != BLOCK_SIZE) {
 			ERROR("read");
 			close(in_file);
@@ -144,12 +131,11 @@ START OF COMPRESSED DATA
 
 	// send blocks of data to server
 	uint8_t byte = 0;
-	uint32_t count;
-	for (count = 0; count < file_size; ++count) {
+	int64_t count;
+	for (count = 1; count <= file_size; ++count) {
+		byte <<= 1;
+		byte |= compressed_data[count];
 		if (count % 8 == 0) {
-			byte <<= 1;
-			byte |= compressed_data[count];
-		} else {
 			if (send(server_soc, &byte, sizeof(byte), MSG_MORE) != sizeof(byte)) {
 				ERROR("send");
 				close(in_file);
@@ -159,7 +145,7 @@ START OF COMPRESSED DATA
 			byte = 0;
 		}
 	}
-	if (send(server_soc, &byte, sizeof(byte), 0) != sizeof(byte)) {
+	if ((count - 1) % 8 != 0 && send(server_soc, &byte, sizeof(byte), 0) != sizeof(byte)) {
 		ERROR("send");
 		close(in_file);
 		close(server_soc);
@@ -212,7 +198,7 @@ int Client::get(std::string filename)
 	}
 
 	// receive from server how many bytes the file is
-	uint64_t file_size;
+	int64_t file_size;
 	if (recv(server_soc, &file_size, sizeof(file_size), 0) != sizeof(file_size)) {
 		ERROR("send");
 		close(server_soc);
