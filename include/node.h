@@ -28,16 +28,20 @@ public:
 	Node();
 	int initialize(std::string node_ip, uint16_t port);
 	void handle_request();
-	
+	void recv_block_index(uint64_t&idx); // get block index from server
+	void markBlockOccupied();
+	void clearBlock();
 	DataRequestType receive_request_type();
-	int receive_data();
-	int send_data();
-	int store_data();
-
+	void receive_data();	// get a block (1024 bytes) from server
+	void send_data();		// send a block to server
+	void store_data();		// store a block in the file
+	void clear_data(); 		// clear a block in the file
+	/* given a block index, find it on the bitmap, return the block */
 
 private:
     int node_soc;
     struct sockaddr_in node_addr;
+	std::vector<uint8_t> bitmap;
 };
 
 #endif /* NODE_H */
