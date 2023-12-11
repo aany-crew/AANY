@@ -1,3 +1,5 @@
+This folder contains all examples we use
+
 Example files credits
 
 https://www.lipsum.com/
