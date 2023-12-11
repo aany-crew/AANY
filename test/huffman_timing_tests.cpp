@@ -63,7 +63,7 @@ void TimingTest(string fname, ofstream& outfile){
     int f, i;
     string c_code;
 
-    string pdir = "/Users/noahmarkowitz/Documents/GitHub/AANY/examples/";
+    string pdir = "/Users/noahmarkowitz/Documents/GitHub/AANY/input/";
 
     ifstream testfile;
     testfile.open(pdir + fname, ios::in);
@@ -136,6 +136,9 @@ void TimingTest(string fname, ofstream& outfile){
     cout << "Generating Huffman Codes from tree took: " << generate_codes_time << "s" << endl;
     outfile << generate_codes_time << ",";
 
+    // Get avg number of bits per character
+
+
     // Convert huffman tree to array
     t_start = chrono::steady_clock::now();
 
@@ -174,6 +177,10 @@ void TimingTest(string fname, ofstream& outfile){
         f = it->second;
         n_bits += f*HuffmanCodes[c].length();
     }
+
+//    outfile << n_bits << ",";
+//    double avg_n_bits = double(n_bits)/double(n_characters);
+//    outfile << avg_n_bits << ",";
 
 
     t_start = chrono::steady_clock::now();
@@ -224,6 +231,7 @@ int main(){
 
     // Start output csv file
     ofstream outfile("output.csv");
+    //outfile << "file_name,n_chracters,n_unique_characters,get_freq_time,build_tree_time,generate_code_time,tree_to_array_time,array_to_tree_time,n_bits,avg_n_bits,compression_time,decompression_time" << endl;
     outfile << "file_name,n_chracters,n_unique_characters,get_freq_time,build_tree_time,generate_code_time,tree_to_array_time,array_to_tree_time,compression_time,decompression_time" << endl;
 
     vector<string>::iterator it;

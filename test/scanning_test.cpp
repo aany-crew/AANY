@@ -13,7 +13,7 @@ using namespace std;
 
 int main(int argc, char *argv[]){
 
-    //string fname = "../examples/lorem_ipsum.txt";
+    //string fname = "../input/lorem_ipsum.txt";
     //string example_text;
 
     ifstream testfile;
