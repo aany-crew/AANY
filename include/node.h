@@ -13,6 +13,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <arpa/inet.h>
+
+#define PORT 8081
 #define BLOCK_SIZE 1024
 
 enum DataRequestType {
