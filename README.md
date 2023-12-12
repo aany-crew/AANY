@@ -1,6 +1,8 @@
 # AANY
 Primary repo for project for EC504 2023F
 
+![](logo_crop.png)
+
 ## Members
 * Adwait Kulkami
 * Yuqi Jin
