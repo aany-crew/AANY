@@ -34,7 +34,7 @@
 
 
 
-void store_on_server(const std::string& filename, std::unordered_map<std::string, std::pair<std::vector<uint8_t>, std::vector<uint64_t> > >& filemap, std::unordered_map<std::string, std::shared_ptr<HuffmanTreeNode> > &treemap, std::unordered_map<std::string, vector<bool> > &datamap) {
+void store_on_server(const std::string& filename, std::unordered_map<std::string, std::pair<std::vector<uint8_t>, std::vector<uint64_t> > >& filemap, std::unordered_map<std::string, std::shared_ptr<HuffmanTreeNode> > &treemap, std::unordered_map<std::string, std::pair<int, vector<bool> > > &datamap) {
     std::cout << "Store on server\n";
     
     // Open file and read contents
@@ -48,6 +48,8 @@ void store_on_server(const std::string& filename, std::unordered_map<std::string
     std::string example_text((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
     infile.close();
 
+    cout << example_text << endl;
+
     // Map for character frequency and get freq of each character
     unordered_map<uint8_t, uint64_t> frequency_map;
     GetCharFrequency(frequency_map, example_text);
@@ -58,6 +60,11 @@ void store_on_server(const std::string& filename, std::unordered_map<std::string
 
     // Generate Huffman codes from tree
     unordered_map<char, string> HuffmanCodes = GenerateHuffmanCodes(root);
+    cout << "HUFFMAN CODES" << endl;
+    unordered_map<char, string>::iterator it2;
+    for (it2=HuffmanCodes.begin(); it2 != HuffmanCodes.end(); it2++){
+        cout << it2->first << ": " << it2->second << endl;
+    }
 
     // Create two arrays from tree
     pair< vector<uint8_t>, vector<uint64_t> > HuffmanArrayRep = HuffmanTreeToArray(root);
@@ -68,39 +75,61 @@ void store_on_server(const std::string& filename, std::unordered_map<std::string
     unordered_map<uint8_t , uint64_t>::iterator it;
     char c;
     int f;
-    for (it=frequency_map.begin(); it != frequency_map.end(); it++){
+    for (it=frequency_map.begin(); it != frequency_map.end(); ++it){
         c = (char)it->first;
         f = it->second;
         n_bits += f*HuffmanCodes[c].length();
     }
     vector<bool> chunk(n_bits,false);
 
+
     // Actually compress
     int textptr = 0;
     int NValidBits = CompressText(root, chunk, n_bits, textptr, example_text);
-    datamap[filename] = chunk;
+    //datamap[filename] = std::pair< NValidBits,chunk>;
+    datamap[filename].first = n_bits;
+    datamap[filename].second = chunk;
+
+    cout << "Bitarray: ";
+    int i;
+    for (i=0; i<n_bits; i++){
+        cout << (chunk[i] ? '1' : '0');
+    }
+    cout << endl;
+
     // compressFile(filename, filemap);
 }
 
-void retrieve_file(const std::string& filename, std::unordered_map<std::string, std::pair<std::vector<uint8_t>, std::vector<uint64_t>>>& filemap, std::unordered_map<std::string, std::shared_ptr<HuffmanTreeNode> > &treemap, std::unordered_map<std::string, vector<bool> > &datamap) {
+void retrieve_file(const std::string& filename, std::unordered_map<std::string, std::pair<std::vector<uint8_t>, std::vector<uint64_t> > >& filemap, std::unordered_map<std::string, std::shared_ptr<HuffmanTreeNode> > &treemap, std::unordered_map<std::string, std::pair<int, vector<bool> > > &datamap) {
     std::cout << "Retrieve file\n";
 
     // Get everything
     //std::shared_ptr<HuffmanTreeNode> root = treemap[filename];
     std::pair<std::vector<uint8_t>, std::vector<uint64_t> > arrays = filemap[filename];
-    vector<bool> data = datamap[filename];
+    int NValidBits = datamap[filename].first;
+    vector<bool> chunk = datamap[filename].second;
+    //vector<bool> data = datamap[filename];
 
     // Convert array(s) back to unordered map
-    unordered_map<uint8_t, uint64_t> frequency_map;
-    vector<uint8_t> characters = arrays.first;
-    vector<uint64_t> frequencies = arrays.second;
-    GetCharFrequency(frequency_map,characters,frequencies);
-    
-    // Build tree again
-    std::shared_ptr<HuffmanTreeNode> root = BuildHuffmanTree(frequency_map);
+//    unordered_map<uint8_t, uint64_t> frequency_map;
+//    vector<uint8_t> characters = arrays.first;
+//    vector<uint64_t> frequencies = arrays.second;
+//    GetCharFrequency(frequency_map,characters,frequencies);
+//
+//    // Build tree again
+//    std::shared_ptr<HuffmanTreeNode> root = BuildHuffmanTree(frequency_map);
+
+    std::shared_ptr<HuffmanTreeNode> root = treemap[filename];
+
+    cout << "Bitarray: ";
+    int i;
+    for (i=0; i<NValidBits; i++){
+        cout << (chunk[i] ? '1' : '0');
+    }
+    cout << endl;
 
     // Decompress
-    std::string decompressed_text = DecompressText(root, data, data.size());
+    std::string decompressed_text = DecompressText(root, chunk, NValidBits);
 
     cout << decompressed_text << endl;
 
@@ -114,7 +143,7 @@ int main() {
     // char buffer[1024] = {0};
     std::unordered_map<std::string, std::pair<std::vector<uint8_t>, std::vector<uint64_t> > > filemap;
     std::unordered_map<std::string, std::shared_ptr<HuffmanTreeNode> > treemap;
-    std::unordered_map<std::string, vector<bool> > datamap;
+    std::unordered_map<std::string, std::pair<int, vector<bool> > > datamap;
     std::unordered_map<std::string, std::shared_ptr<HuffmanTreeNode> >::iterator it;
     // Creating socket file descriptor
     // ... (Socket creation and setup)

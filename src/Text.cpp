@@ -120,7 +120,7 @@ int CompressText(const shared_ptr<HuffmanTreeNode>& root, vector<bool> &Chunk, i
         vector<bool> tmp_bitarray(char_code_len,false);
 
         // Make sure there's enough storage space left in this chunk
-        if ( (char_code_len+TotalBits) < ChunkSize && TextPtr < Text_len){
+        if ( ( (char_code_len+TotalBits) < ChunkSize+1 ) && (TextPtr <= Text_len) ){
 
             // Convert code to bits
             while (char_code_ptr < char_code_len){
