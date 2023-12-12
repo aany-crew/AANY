@@ -124,6 +124,13 @@ void TimingTest(string fname, ofstream& outfile){
     cout << "Building tree took: " << build_tree_time << "s" << endl;
     outfile << build_tree_time << ",";
 
+    // Get difference in height between left and right root nodes
+    int height_diff = abs(root->left->height - root->right->height);
+    cout << "Difference in left and right trees: " << height_diff << endl;
+    outfile << height_diff << ",";
+    cout << "Tree height: " << root->height << endl;
+    outfile << root->height << ",";
+
     //cout << "PASS3" << endl;
     // Generate numeric codes for each character in the tree
     t_start = chrono::steady_clock::now();
@@ -178,9 +185,11 @@ void TimingTest(string fname, ofstream& outfile){
         n_bits += f*HuffmanCodes[c].length();
     }
 
-//    outfile << n_bits << ",";
-//    double avg_n_bits = double(n_bits)/double(n_characters);
-//    outfile << avg_n_bits << ",";
+    cout << "n_bits: " << n_bits << endl;
+    outfile << n_bits << ",";
+    double avg_n_bits = double(n_bits)/double(n_characters);
+    cout << "avg_n_bits:" << avg_n_bits << endl;
+    outfile << avg_n_bits << ",";
 
 
     t_start = chrono::steady_clock::now();
@@ -215,6 +224,8 @@ int main(){
 
     // List all the files to use in an unordered map
     vector<string> files;
+    files.push_back("simple.txt");
+    files.push_back("simple_big.txt");
     files.push_back("lorem_ipsum_100.txt");
     files.push_back("lorem_ipsum_1000.txt");
     files.push_back("lorem_ipsum_10000.txt");
@@ -230,9 +241,9 @@ int main(){
     files.push_back("business-operations-survey-2022-business-finance.csv");
 
     // Start output csv file
-    ofstream outfile("output.csv");
-    //outfile << "file_name,n_chracters,n_unique_characters,get_freq_time,build_tree_time,generate_code_time,tree_to_array_time,array_to_tree_time,n_bits,avg_n_bits,compression_time,decompression_time" << endl;
-    outfile << "file_name,n_chracters,n_unique_characters,get_freq_time,build_tree_time,generate_code_time,tree_to_array_time,array_to_tree_time,compression_time,decompression_time" << endl;
+    ofstream outfile("analysis/output.csv");
+    outfile << "file_name,n_chracters,n_unique_characters,get_freq_time,build_tree_time,height_diff,tree_height,generate_code_time,tree_to_array_time,array_to_tree_time,n_bits,avg_n_bits,compression_time,decompression_time" << endl;
+    //outfile << "file_name,n_chracters,n_unique_characters,get_freq_time,build_tree_time,generate_code_time,tree_to_array_time,array_to_tree_time,compression_time,decompression_time" << endl;
 
     vector<string>::iterator it;
     for (it=files.begin(); it != files.end(); it++){
