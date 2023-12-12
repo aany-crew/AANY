@@ -125,6 +125,18 @@ inline int Server::get_filename(std::string &filename)
 	return 0;
 }
 
+/*
+class Metadata {
+public:
+	Metadata() {
+		num_bits = 0;
+	}
+
+	int64_t num_bits;
+	std::map<uint8_t, std::unordered_set<std::pair<std::string, int64_t>>> block_map;
+};
+std::unordered_map<std::string, Metadata> metadata_map;
+*/
 inline int Server::put(std::string &filename)
 {
 	int64_t file_size;	/* in bits */
@@ -140,11 +152,23 @@ inline int Server::put(std::string &filename)
 		return -1;
 	}
 
-	if (metadata_map.find(filename) != metadata_map.end()) {
-		metadata_map.erase(filename);
+	if (metadata_map.find(filename) == metadata_map.end()) {
+		metadata_map[filename].num_bits = file_size;
+
+		std::vector<std::string> random_ips(node_ips.begin(), node_ips.end());
+		std::random_device rd;
+		std::shuffle(randomElements.begin(), randomElements.end(), std::mt19937(rd));
+		random_ips.resize(std::min(random_ips.size(), 3));
+
+		for (int64_t num_blocks = (file_size >> 3) + ((file_size & 7) != 0); num_blocks > 0; --num_blocks) {
+			for (int i = 0; i < random_ips.size(); ++i) {
+				block_map[num_blocks-1].insert(std::make_pair(random_ips[i], num_blocks-1));
+			}
+		}
+	} else {
+		
 	}
-	metadata_map[filename].num_bits = file_size;
-	metadata_map[filename].mp
+	
 
 	return 0;
 }
@@ -157,7 +181,24 @@ inline int Server::get(std::string &filename)
 
 inline int Server::clear(std::string &filename)
 {
-	filename = filename;
+	for (auto block : metadata_map[filename].block_map)
+	
 	return 0;
 }
 
+static int clear_block(int64_t block_idx)
+{
+	// tell node this is a put request
+	uint8_t operation = CLEAR;
+	if (send(node_soc, &operation, sizeof(operation), 0) != sizeof(operation)) {
+		ERROR("send");
+		return -1;
+	}
+
+	if (send(node_soc, &block_idx, sizeof(block_idx), 0) != sizeof(block_idx)) {
+		ERROR("send");
+		return -1;
+	}
+
+	return 0;
+}

@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <string.h>
+#include <utility>
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -19,9 +20,14 @@ enum operation {
 	CLEAR
 };
 
-struct Metadata {
+class Metadata {
+public:
+	Metadata() {
+		num_bits = 0;
+	}
+
 	int64_t num_bits;
-	std::map<uint8_t, unordered_set<std::string>> block_map;
+	std::map<uint8_t, std::unordered_set<std::pair<std::string, int64_t>>> block_map;
 };
 
 class Server {
