@@ -33,4 +33,8 @@ Sample data obtained from:
 * g++ -std=c++17 src/simple_server.cpp src/Text.cpp src/HuffmanTreeNode.cpp src/BuildHuffmanTree.cpp src/GenerateHuffmanCodes.cpp -o bin/simple_server.out
 * bin/simple_server.out
 * Enter Filename: (need to copy paste the path of the example)
-* Enter Command(PUT/GET): (enter either one)
+* Enter Command(PUT/GET): (enter PUT)
+* Will show something in terminal
+* Enter Filename: (copy paste the same path before)
+* Enter Command: (enter GET)
+* Will show something in terminal
