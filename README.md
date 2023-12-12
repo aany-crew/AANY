@@ -38,3 +38,4 @@ Sample data obtained from:
 * Enter Filename: (copy paste the same path before)
 * Enter Command: (enter GET)
 * Will show something in terminal
+* These steps represent that user chooses a file to compress it and send it to server. Then user wants to retrieve it from server by decompressing it
