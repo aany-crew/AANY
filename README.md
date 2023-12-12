@@ -26,3 +26,11 @@ Sample data obtained from:
 * https://media.githubusercontent.com/media/datablist/sample-csv-files/main/files/organizations/organizations-100.csv
 * https://www.stats.govt.nz/large-datasets/csv-files-for-download/
 * https://www.datablist.com/learn/csv/download-sample-csv-files
+
+---
+
+## Instructions for Running the Code
+* g++ -std=c++17 src/simple_server.cpp src/Text.cpp src/HuffmanTreeNode.cpp src/BuildHuffmanTree.cpp src/GenerateHuffmanCodes.cpp -o bin/simple_server.out
+* bin/simple_server.out
+* Enter Filename: (need to copy paste the path of the example)
+* Enter Command(PUT/GET): (enter either one)
