@@ -16,9 +16,12 @@ SRC := $(wildcard $(SRC_DIR)/*.cpp)
 OBJ := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC))
 INC := $(wildcard $(INC_DIR)/*.h)
 
-.PHONY: all clean
+.PHONY: all simple_server clean
 
 all: app_client app_server
+
+simple_server: $(OBJ_DIR)/simple_server.o $(OBJ_DIR)/Text.o $(OBJ_DIR)/HuffmanTreeNode.o $(OBJ_DIR)/BuildHuffmanTree.o $(OBJ_DIR)/GenerateHuffmanCodes.o
+	$(CC) $^ -o $(BIN_DIR)/$@
 
 app_client: $(OBJ_DIR)/app_client.o $(OBJ_DIR)/client.o $(OBJ_DIR)/Text.o $(OBJ_DIR)/BuildHuffmanTree.o $(OBJ_DIR)/GenerateHuffmanCodes.o $(OBJ_DIR)/HuffmanTreeNode.o | $(OBJ_DIR)
 	$(CC) $^ -o $(BIN_DIR)/$@
@@ -27,6 +30,9 @@ app_server: $(OBJ_DIR)/app_server.o $(OBJ_DIR)/server.o
 	$(CC) $^ -o $(BIN_DIR)/$@
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC_DIR)/%.h | $(OBJ_DIR)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 $(OBJ_DIR)/%.o: $(APP_DIR)/%.cpp | $(OBJ_DIR)

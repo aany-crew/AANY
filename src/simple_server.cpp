@@ -84,8 +84,8 @@ void store_on_server(const std::string& filename, std::unordered_map<std::string
 
 
     // Actually compress
-    int textptr = 0;
-    int NValidBits = CompressText(root, chunk, n_bits, textptr, example_text);
+    //int textptr = 0;
+    //int NValidBits = CompressText(root, chunk, n_bits, textptr, example_text);
     //datamap[filename] = std::pair< NValidBits,chunk>;
     datamap[filename].first = n_bits;
     datamap[filename].second = chunk;
@@ -136,9 +136,9 @@ void retrieve_file(const std::string& filename, std::unordered_map<std::string, 
 }
 
 int main() {
-    int server_fd, new_socket;
-    struct sockaddr_in address;
-    int opt = 1;
+    //int server_fd, new_socket;
+    //struct sockaddr_in address;
+    //int opt = 1;
     // int addrlen = sizeof(address);
     // char buffer[1024] = {0};
     std::unordered_map<std::string, std::pair<std::vector<uint8_t>, std::vector<uint64_t> > > filemap;
