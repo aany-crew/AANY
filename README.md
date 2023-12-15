@@ -32,8 +32,9 @@ Sample data obtained from:
 ---
 
 ## Instructions for Running the Code
-* g++ -std=c++17 src/simple_server.cpp src/Text.cpp src/HuffmanTreeNode.cpp src/BuildHuffmanTree.cpp src/GenerateHuffmanCodes.cpp -o bin/simple_server.out
-* ./bin/simple_server.out
+*  In the project’s home directory, type "make simple_server" to build the executable. It will be located
+in <project home directory>/bin/simple_server.
+* Run the simple_server executable
 * Enter Filename: (need to copy paste the path of the example)
 * Enter Command(PUT/GET): (enter PUT)
 * Will show something in terminal
